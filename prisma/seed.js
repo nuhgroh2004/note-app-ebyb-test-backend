@@ -6,23 +6,58 @@ const prisma = new PrismaClient();
 async function main() {
   const defaultPassword = await bcrypt.hash("password123", 10);
 
-  await prisma.user.createMany({
-    data: [
-      {
-        name: "Admin EBYB",
-        email: "admin@ebyb.test",
-        password: defaultPassword,
-      },
-      {
-        name: "User Demo",
-        email: "user@ebyb.test",
-        password: defaultPassword,
-      },
-    ],
-    skipDuplicates: true,
+  const adminUser = await prisma.user.upsert({
+    where: { email: "admin@ebyb.test" },
+    update: {
+      name: "Admin EBYB",
+      password: defaultPassword,
+    },
+    create: {
+      name: "Admin EBYB",
+      email: "admin@ebyb.test",
+      password: defaultPassword,
+    },
   });
 
-  console.log("Seed completed: users inserted.");
+  const demoUser = await prisma.user.upsert({
+    where: { email: "user@ebyb.test" },
+    update: {
+      name: "User Demo",
+      password: defaultPassword,
+    },
+    create: {
+      name: "User Demo",
+      email: "user@ebyb.test",
+      password: defaultPassword,
+    },
+  });
+
+  await prisma.note.deleteMany();
+
+  await prisma.note.createMany({
+    data: [
+      {
+        title: "Project kickoff",
+        content: "Finalize API scope and timeline.",
+        noteDate: new Date("2026-04-20T00:00:00.000Z"),
+        userId: adminUser.id,
+      },
+      {
+        title: "Prepare release notes",
+        content: "Collect completed tasks before release.",
+        noteDate: new Date("2026-04-21T00:00:00.000Z"),
+        userId: adminUser.id,
+      },
+      {
+        title: "Personal reminder",
+        content: "Review pending notes for this week.",
+        noteDate: new Date("2026-04-22T00:00:00.000Z"),
+        userId: demoUser.id,
+      },
+    ],
+  });
+
+  console.log("Seed completed: users and notes inserted.");
 }
 
 main()

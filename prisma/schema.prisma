@@ -12,8 +12,23 @@ model User {
   name      String
   email     String   @unique
   password  String
+  notes     Note[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@map("users")
+}
+
+model Note {
+  id        Int      @id @default(autoincrement())
+  title     String
+  content   String   @db.Text
+  noteDate  DateTime
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, noteDate])
+  @@map("notes")
 }

@@ -1,6 +1,21 @@
 const request = require("supertest");
 
 jest.mock("../src/config/db", () => ({
+  prisma: {
+    user: {
+      findUnique: jest.fn(),
+      create: jest.fn(),
+    },
+    note: {
+      create: jest.fn(),
+      count: jest.fn(),
+      findMany: jest.fn(),
+      findFirst: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
+    $transaction: jest.fn(),
+  },
   testDatabaseConnection: jest.fn(),
 }));
 
