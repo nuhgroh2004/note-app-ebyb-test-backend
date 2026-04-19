@@ -1,0 +1,32 @@
+{
+  "name": "notes-app-backend",
+  "version": "1.0.0",
+  "description": "Express.js backend with Prisma + MySQL for notes_app_ebyb_test",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "nodemon src/server.js",
+    "start": "node src/server.js",
+    "prisma:generate": "prisma generate",
+    "migrate": "prisma migrate dev --name init_user",
+    "migrate:deploy": "prisma migrate deploy",
+    "migrate:reset": "prisma migrate reset --force",
+    "seed": "prisma db seed",
+    "migrate:fresh:seed": "prisma migrate reset --force",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch"
+  },
+  "prisma": {
+    "seed": "node prisma/seed.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "nodemon": "^3.1.4",
+    "prisma": "^5.22.0",
+    "supertest": "^7.0.0"
+  }
+}
