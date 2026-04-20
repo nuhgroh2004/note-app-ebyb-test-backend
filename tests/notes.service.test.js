@@ -51,6 +51,32 @@ describe("Notes Service", () => {
     expect(result.items.length).toBe(2);
   });
 
+  test("listNotes should include search and metadata filters", async () => {
+    prisma.$transaction.mockResolvedValueOnce([0, []]);
+
+    await listNotes(1, {
+      page: 1,
+      limit: 10,
+      date: null,
+      startDate: new Date("2026-04-01T00:00:00.000Z"),
+      endDate: new Date("2026-04-30T00:00:00.000Z"),
+      search: "proposal",
+      entryType: "document",
+      isStarred: true,
+      sort: "updatedAtDesc",
+    });
+
+    expect(prisma.note.count).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          userId: 1,
+          entryType: "document",
+          isStarred: true,
+        }),
+      }),
+    );
+  });
+
   test("getNoteById should throw if note not found", async () => {
     prisma.note.findFirst.mockResolvedValueOnce(null);
 

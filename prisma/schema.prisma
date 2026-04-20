@@ -24,11 +24,18 @@ model Note {
   title     String
   content   String   @db.Text
   noteDate  DateTime
+  entryType String   @default("note")
+  label     String?
+  color     String?
+  time      String?
+  isStarred Boolean  @default(false)
+  location  String   @default("All Docs")
   userId    Int
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId, noteDate])
+  @@index([userId, entryType])
   @@map("notes")
 }

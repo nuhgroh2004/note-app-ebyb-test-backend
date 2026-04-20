@@ -1,7 +1,7 @@
 # Notes Module
 
 ## Purpose
-Manage CRUD notes with calendar date support per user.
+Manage CRUD notes/documents with calendar metadata and DB-level filtering per user.
 
 ## Flow
 1. Authenticate user using Bearer token.
@@ -21,6 +21,12 @@ Manage CRUD notes with calendar date support per user.
 - `page`: positive integer
 - `limit`: 1-100
 - `date`: `YYYY-MM-DD` to filter calendar date
+- `startDate`: `YYYY-MM-DD` for range start
+- `endDate`: `YYYY-MM-DD` for range end
+- `entryType`: `note` or `document`
+- `search`: keyword search in title/content/label/location
+- `isStarred`: `true`/`false`
+- `sort`: `noteDateDesc`, `noteDateAsc`, `updatedAtDesc`, `updatedAtAsc`, `createdAtDesc`
 
 ## Request Body
 ### Create note
@@ -28,7 +34,13 @@ Manage CRUD notes with calendar date support per user.
 {
   "title": "Meeting Notes",
   "content": "Discuss release plan",
-  "noteDate": "2026-04-19"
+  "noteDate": "2026-04-19",
+  "entryType": "note",
+  "label": "Kerja",
+  "color": "green",
+  "time": "09:00",
+  "isStarred": false,
+  "location": "All Docs"
 }
 ```
 

@@ -12,12 +12,38 @@ function buildDateRange(date) {
   };
 }
 
+function buildSortOrder(sort) {
+  if (sort === "noteDateAsc") {
+    return [{ noteDate: "asc" }, { id: "asc" }];
+  }
+
+  if (sort === "noteDateDesc") {
+    return [{ noteDate: "desc" }, { id: "desc" }];
+  }
+
+  if (sort === "updatedAtAsc") {
+    return [{ updatedAt: "asc" }, { id: "asc" }];
+  }
+
+  if (sort === "createdAtDesc") {
+    return [{ createdAt: "desc" }, { id: "desc" }];
+  }
+
+  return [{ updatedAt: "desc" }, { id: "desc" }];
+}
+
 async function createNote(userId, payload) {
   return prisma.note.create({
     data: {
       title: payload.title,
       content: payload.content,
       noteDate: payload.noteDate,
+      entryType: payload.entryType,
+      label: payload.label,
+      color: payload.color,
+      time: payload.time,
+      isStarred: payload.isStarred,
+      location: payload.location,
       userId,
     },
   });
@@ -27,15 +53,46 @@ async function listNotes(userId, query) {
   const skip = (query.page - 1) * query.limit;
   const where = { userId };
 
+  if (query.search) {
+    where.OR = [
+      { title: { contains: query.search } },
+      { content: { contains: query.search } },
+      { label: { contains: query.search } },
+      { location: { contains: query.search } },
+    ];
+  }
+
   if (query.date) {
     where.noteDate = buildDateRange(query.date);
+  } else if (query.startDate || query.endDate) {
+    const nextDateRange = {};
+
+    if (query.startDate) {
+      nextDateRange.gte = query.startDate;
+    }
+
+    if (query.endDate) {
+      const dayAfterEndDate = new Date(query.endDate);
+      dayAfterEndDate.setUTCDate(dayAfterEndDate.getUTCDate() + 1);
+      nextDateRange.lt = dayAfterEndDate;
+    }
+
+    where.noteDate = nextDateRange;
+  }
+
+  if (query.entryType) {
+    where.entryType = query.entryType;
+  }
+
+  if (query.isStarred !== null && query.isStarred !== undefined) {
+    where.isStarred = query.isStarred;
   }
 
   const [total, notes] = await prisma.$transaction([
     prisma.note.count({ where }),
     prisma.note.findMany({
       where,
-      orderBy: [{ noteDate: "desc" }, { id: "desc" }],
+      orderBy: buildSortOrder(query.sort),
       skip,
       take: query.limit,
     }),
