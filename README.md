@@ -1,86 +1,176 @@
-﻿# Notes App Backend (Express + Prisma + MySQL)
+﻿# Notes App Backend Documentation
 
-## 1. Install dependencies
+## 1. Ringkasan
+Backend menyediakan REST API untuk fitur:
+- Auth (register, login, login Google)
+- Notes (CRUD + filter + pagination + sorting)
+- Profile (detail profil + dashboard statistik)
 
+Arsitektur backend:
+- Express router -> controller -> service -> Prisma
+- Middleware auth JWT untuk endpoint private
+- Error handling terpusat
+
+## 2. Teknologi yang Digunakan
+- Node.js + Express.js
+- Prisma ORM
+- MySQL
+- JWT (jsonwebtoken)
+- bcryptjs
+- helmet
+- express-rate-limit
+- Jest + Supertest (testing)
+
+## 3. Dependensi
+### Runtime dependencies
+- @prisma/client
+- bcryptjs
+- dotenv
+- express
+- express-rate-limit
+- helmet
+- jsonwebtoken
+
+### Dev dependencies
+- jest
+- nodemon
+- prisma
+- supertest
+
+Sumber: package.json
+
+## 4. Instalasi
+### Prasyarat
+- Node.js
+- MySQL aktif
+
+### Install paket
 ```bash
 npm install
 ```
 
-## 2. Environment setup
-
-This project is configured for phpMyAdmin / MySQL local default:
-
-- `DB_PORT=3306`
-- `DB_USER=root`
-- `DB_PASSWORD=root`
-- `DB_NAME=notes_app_ebyb_test`
-
-Main env file: `.env`
-
-`DATABASE_URL` is used by Prisma:
-
+### Setup environment
+Buat file .env berdasarkan .env.example
 ```env
+PORT=8080
 DATABASE_URL="mysql://root:root@localhost:3306/notes_app_ebyb_test"
 JWT_SECRET="notes_app_ebyb_test_secret_key"
 JWT_EXPIRES_IN="7d"
+GOOGLE_CLIENT_ID="682901587483-492tqbud3m76gr868maeean7o46sial5.apps.googleusercontent.com"
 ```
 
-## 3. Database migration and seeding
-
-Available commands:
-
+### Migrasi database
 ```bash
-npm run migrate
 npm run migrate:deploy
-npm run migrate:reset
-npm run seed
-npm run migrate:fresh:seed
 ```
 
-Laravel-style equivalent:
+### Seed (opsional)
+```bash
+npm run seed
+```
 
-- `php artisan migrate:fresh --seed` -> `npm run migrate:fresh:seed`
-
-Prisma schema:
-
-- `prisma/schema.prisma`
-
-Seeder file:
-
-- `prisma/seed.js`
-
-## 4. Feature modules
-
-- Auth docs: `src/modules/auth/README.md`
-- Notes docs: `src/modules/notes/README.md`
-- Profile docs: `src/modules/profile/README.md`
-
-## 5. API reference
-
-- Complete API docs: `docs/API.md`
-
-## 6. Run development server
-
+### Jalankan development
 ```bash
 npm run dev
 ```
 
-## 7. Run tests
+### Jalankan production
+```bash
+npm run start
+```
 
+## 5. Lokasi Implementasi
+- Boot server: src/server.js
+- App setup + CORS + health: src/app.js
+- Router aggregator: src/routes/index.js
+- DB client: src/config/db.js
+
+### Modul
+- Auth: src/modules/auth
+- Notes: src/modules/notes
+- Profile: src/modules/profile
+
+### Middleware
+- JWT guard: src/middlewares/authMiddleware.js
+- Error handler: src/middlewares/errorHandler.js
+- Not found handler: src/middlewares/notFoundHandler.js
+
+## 6. Endpoint Cepat
+- GET /
+- GET /api/health
+- POST /api/auth/register
+- POST /api/auth/login
+- POST /api/auth/google
+- POST /api/notes
+- GET /api/notes
+- GET /api/notes/:id
+- PUT /api/notes/:id
+- DELETE /api/notes/:id
+- GET /api/profile
+- GET /api/profile/dashboard
+
+Detail request/response ada di docs/API.md.
+
+## 7. Pola Response API
+### Success
+```json
+{
+  "message": "...",
+  "data": { }
+}
+```
+
+### Validation error
+```json
+{
+  "message": "Validation error",
+  "errors": [
+    { "field": "title", "message": "Title must be 3-150 characters" }
+  ]
+}
+```
+
+## 8. Potongan Kode Penting
+### 1) Binding server Railway-friendly
+```js
+const PORT = Number(process.env.PORT) || 8080;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
+```
+
+### 2) JWT auth middleware
+```js
+const authHeader = req.headers.authorization;
+if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  return next(new AppError('Unauthorized', 401));
+}
+const payload = verifyToken(token);
+req.userId = payload.userId;
+```
+
+### 3) Transaction list notes
+```js
+const [total, notes] = await prisma.$transaction([
+  prisma.note.count({ where }),
+  prisma.note.findMany({ where, orderBy, skip, take }),
+]);
+```
+
+## 9. Testing
+Jalankan seluruh test:
 ```bash
 npm test
 ```
 
-## Available endpoints
+File test utama:
+- tests/app.test.js
+- tests/auth.service.test.js
+- tests/notes.service.test.js
+- tests/profile.service.test.js
 
-- `GET /`
-- `GET /api/health`
-- `POST /api/auth/register`
-- `POST /api/auth/login`
-- `POST /api/notes`
-- `GET /api/notes`
-- `GET /api/notes/:id`
-- `PUT /api/notes/:id`
-- `DELETE /api/notes/:id`
-- `GET /api/profile`
-- `GET /api/profile/dashboard`
+## 10. Dokumentasi Modul
+- Auth module docs: src/modules/auth/README.md
+- Notes module docs: src/modules/notes/README.md
+- Profile module docs: src/modules/profile/README.md
+- API docs lengkap: docs/API.md
