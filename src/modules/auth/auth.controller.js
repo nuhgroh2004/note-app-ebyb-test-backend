@@ -1,9 +1,10 @@
 const AppError = require("../../utils/appError");
 const asyncHandler = require("../../utils/asyncHandler");
-const { registerUser, loginUser } = require("./auth.service");
+const { registerUser, loginUser, loginWithGoogle } = require("./auth.service");
 const {
   validateRegisterPayload,
   validateLoginPayload,
+  validateGoogleLoginPayload,
 } = require("./auth.validation");
 
 const register = asyncHandler(async (req, res, next) => {
@@ -36,7 +37,23 @@ const login = asyncHandler(async (req, res, next) => {
   });
 });
 
+const google = asyncHandler(async (req, res, next) => {
+  const validation = validateGoogleLoginPayload(req.body);
+
+  if (!validation.isValid) {
+    return next(new AppError("Validation error", 422, validation.errors));
+  }
+
+  const result = await loginWithGoogle(validation.data);
+
+  return res.status(200).json({
+    message: "Google login success",
+    data: result,
+  });
+});
+
 module.exports = {
   register,
   login,
+  google,
 };

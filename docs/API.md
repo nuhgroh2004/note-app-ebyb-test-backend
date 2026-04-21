@@ -29,6 +29,15 @@
 }
 ```
 
+### Google Login
+- `POST /api/auth/google`
+- Body:
+```json
+{
+  "idToken": "google-id-token"
+}
+```
+
 ## Notes Module (Bearer Token Required)
 ### Create note
 - `POST /api/notes`

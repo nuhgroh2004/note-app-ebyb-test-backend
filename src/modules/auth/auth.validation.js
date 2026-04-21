@@ -47,7 +47,23 @@ function validateLoginPayload(payload) {
   };
 }
 
+function validateGoogleLoginPayload(payload) {
+  const errors = [];
+  const idToken = String(payload.idToken || "").trim();
+
+  if (idToken.length < 20 || idToken.length > 4096) {
+    errors.push({ field: "idToken", message: "Google idToken is invalid" });
+  }
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    data: { idToken },
+  };
+}
+
 module.exports = {
   validateRegisterPayload,
   validateLoginPayload,
+  validateGoogleLoginPayload,
 };
