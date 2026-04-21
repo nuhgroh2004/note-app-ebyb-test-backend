@@ -1,6 +1,15 @@
 const { prisma } = require("../../config/db");
 const AppError = require("../../utils/appError");
 
+function isInvalidUserReferenceError(error) {
+  if (!error || error.code !== "P2003") {
+    return false;
+  }
+
+  const fieldName = String(error.meta?.field_name || "").toLowerCase();
+  return fieldName.includes("userid");
+}
+
 function buildDateRange(date) {
   const start = new Date(date);
   const end = new Date(start);
@@ -33,20 +42,28 @@ function buildSortOrder(sort) {
 }
 
 async function createNote(userId, payload) {
-  return prisma.note.create({
-    data: {
-      title: payload.title,
-      content: payload.content,
-      noteDate: payload.noteDate,
-      entryType: payload.entryType,
-      label: payload.label,
-      color: payload.color,
-      time: payload.time,
-      isStarred: payload.isStarred,
-      location: payload.location,
-      userId,
-    },
-  });
+  try {
+    return await prisma.note.create({
+      data: {
+        title: payload.title,
+        content: payload.content,
+        noteDate: payload.noteDate,
+        entryType: payload.entryType,
+        label: payload.label,
+        color: payload.color,
+        time: payload.time,
+        isStarred: payload.isStarred,
+        location: payload.location,
+        userId,
+      },
+    });
+  } catch (error) {
+    if (isInvalidUserReferenceError(error)) {
+      throw new AppError("Invalid token", 401);
+    }
+
+    throw error;
+  }
 }
 
 async function listNotes(userId, query) {

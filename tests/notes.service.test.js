@@ -39,6 +39,33 @@ describe("Notes Service", () => {
     expect(result.id).toBe(1);
   });
 
+  test("createNote should throw 401 when token userId no longer exists", async () => {
+    prisma.note.create.mockRejectedValueOnce({
+      code: "P2003",
+      meta: {
+        field_name: "notes_userId_fkey (index)",
+      },
+    });
+
+    await expect(
+      createNote(999999, {
+        title: "A",
+        content: "B",
+        noteDate: new Date("2026-04-19T00:00:00.000Z"),
+        entryType: "note",
+        label: "Kerja",
+        color: "green",
+        time: "09:00",
+        isStarred: false,
+        location: "All Docs",
+      }),
+    ).rejects.toMatchObject({
+      name: "AppError",
+      statusCode: 401,
+      message: "Invalid token",
+    });
+  });
+
   test("listNotes should return paginated result", async () => {
     prisma.$transaction.mockResolvedValueOnce([
       2,
