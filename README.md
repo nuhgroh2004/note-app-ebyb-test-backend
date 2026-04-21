@@ -53,10 +53,10 @@ npm install
 Buat file .env berdasarkan .env.example
 ```env
 PORT=8080
-DATABASE_URL="mysql://root:root@localhost:3306/notes_app_ebyb_test"
-JWT_SECRET="notes_app_ebyb_test_secret_key"
+DATABASE_URL=""
+JWT_SECRET=""
 JWT_EXPIRES_IN="7d"
-GOOGLE_CLIENT_ID="682901587483-492tqbud3m76gr868maeean7o46sial5.apps.googleusercontent.com"
+GOOGLE_CLIENT_ID=""
 ```
 
 ### Migrasi database
